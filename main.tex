@@ -1,0 +1,954 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{titling}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{natbib}
+%\usepackage[toc]{glossaries}
+\usepackage[acronym]{glossaries}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\makebox[\textwidth][r]{Enhancing Fraud Detection in Bank Accounts}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    breaklines=true,
+    frame=single,
+    captionpos=b,
+    aboveskip=10pt,
+    belowskip=10pt
+}
+
+\geometry{a4paper, top=2cm, bottom=2cm, left=2cm, right=2cm}
+\setstretch{1.5}
+
+% Chapter, section, and subsection formatting
+\titleformat{\chapter}[block]{\normalfont\huge\bfseries}{\thechapter}{1em}{}
+\titleformat{\section}[block]{\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}[block]{\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titlespacing*{\chapter}{0pt}{0pt}{12pt}
+\titlespacing*{\section}{0pt}{12pt}{6pt}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+
+% Footnotes font size
+\makeatletter
+\renewcommand\footnoterule{%
+    \kern-3\p@
+    \hrule\@width\columnwidth
+    \kern2.6\p@}
+\renewcommand\@makefntext[1]{%
+    \noindent\makebox[1.8em][r]{\@makefnmark}#1}
+\renewcommand{\footnotesize}{\fontsize{10pt}{12pt}\selectfont}
+\makeatother
+
+% title page
+\renewcommand{\maketitle}{
+    \begin{titlepage}
+       \noindent
+        \vspace*{1cm}
+        \begin{center}
+            % Centered logo
+            \includegraphics[width=0.5\textwidth]{iu_Logo_EN_black_RGB_horizontal.jpg}\\[0.5cm]
+    
+            \textbf{\fontsize{14pt}{16pt}\selectfont Master Thesis}
+            \vspace{1.5cm}
+    
+            \textbf{\fontsize{14pt}{16pt}\selectfont IU University of Applied Sciences}
+            \vspace{0.5cm}
+    
+            \textbf{\fontsize{14pt}{16pt}\selectfont Study programme: Data Science}
+            \vspace{2.0cm}
+    
+            \textbf{\fontsize{14pt}{16pt}\selectfont Enhancing Fraud Detection in Bank Accounts Through Machine Learning: A Case Study Using the BAF Suite}
+            
+            \vspace{2.0cm}
+            \textbf{\fontsize{14pt}{16pt}\selectfont Volkan Karaarslan}\\
+            \vspace{0.5cm}
+            \textbf{\fontsize{14pt}{16pt}\selectfont Enrolment number: 92114860}\\
+            
+            \vspace{0.5cm}
+            
+            \textbf{\fontsize{14pt}{16pt}\selectfont Bernhard-Letterhaus Str. 25}\\
+            \vspace{0.5cm}
+            \textbf{\fontsize{14pt}{16pt}\selectfont 41466 Neuss}
+            
+        \end{center}
+        
+        % Add lines at the bottom of the title page, beginning from left margin
+        \vspace*{\fill}
+        \noindent
+        \textbf{\fontsize{14pt}{16pt}\selectfont Supervisor: Prof. Robert Graf}\\
+        \textbf{\fontsize{14pt}{16pt}\selectfont Date of submission: 1st August 2024}
+    \end{titlepage}
+}
+
+\makeglossaries
+\newacronym{adasyn}{ADASYN}{Adaptive Synthetic Sampling Approach for Imbalanced Learning}
+\newacronym{ai}{AI}{Artificial Intelligence}
+\newacronym{auc}{AUC}{Area Under the Curve}
+\newacronym{baf}{BAF}{Bank Account Fraud}
+\newacronym{cart}{CART}{Classification and Regression Trees}
+\newacronym{crispdm}{CRISP-DM}{Cross-Industry Standard Process for Data Mining}
+\newacronym{ctgan}{CTGAN}{Conditional Tabular Generative Adversarial Network}
+\newacronym{dl}{DL}{Deep Learning}
+\newacronym{dm}{DM}{Data Mining}
+\newacronym{drl}{DRL}{Deep Reinforcement Learning}
+\newacronym{eda}{EDA}{Exploratory Data Analysis}
+\newacronym{gan}{GAN}{Generative Adversarial Network}
+\newacronym{iu}{IU}{Interpretation Unit}
+\newacronym{mb}{MB}{Megabyte}
+\newacronym{ml}{ML}{Machine Learning}
+\newacronym{nc}{NC}{Normalized Cut}
+\newacronym{ndcg}{NDCG}{Normalized Discounted Cumulative Gain}
+\newacronym{ndcg@k}{NDCG@k}{Normalized Discounted Cumulative Gain at the Position k}
+\newacronym{nn}{NN}{Neural Networks}
+\newacronym{os}{OS}{Operating System}
+\newacronym{rdqn}{RDQN}{Reinforcement Deep Q-Network}
+\newacronym{roc}{ROC}{Receiver Operating Characteristic}
+\newacronym{rus}{RUS}{Random Under Sampling}
+\newacronym{smote}{SMOTE}{Synthetic Minority Over-sampling Technique}
+\newacronym{smotenc}{SMOTE-NC}{Synthetic Minority Over-sampling Technique for Nominal and Continuous}
+\newacronym{zip}{ZIP}{Zone Improvement Plan}
+
+\begin{document}
+
+\maketitle
+
+
+\begin{abstract}
+This thesis explores the application of machine learning techniques in detecting fraudulent activities within bank accounts using the \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite}. It aims to develop and evaluate a machine learning model for fraud detection, thereby improving detection accuracy, increasing working efficiency, and mitigating social inequities caused by biased predictions.
+\end{abstract}
+
+\printglossary[type=\acronymtype, title=Abbreviations]
+\pagenumbering{gobble}
+
+%\printglossary
+\clearpage
+
+\tableofcontents
+
+\pagenumbering{gobble}
+
+
+\clearpage
+
+
+\chapter{Introduction}
+
+\pagenumbering{arabic}
+
+\section{Background}
+Fraud detection has become increasingly critical in the financial sector due to the significant rise in fraudulent activities. Banks and financial institutions are particularly vulnerable to fraud, which can result in substantial financial losses and damage to reputation. Traditionally, fraud detection systems relied on rule-based methods, which, although effective to some extent, often fail to adapt to new and sophisticated fraudulent techniques.\\
+
+With the advent of machine learning, there has been a paradigm shift in the approach to fraud detection. Machine learning models, with their ability to learn from vast amounts of data and identify patterns, offer a promising solution to detecting fraudulent activities (\citealp[p.4]{bao2020detecting}). The \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite} is a synthetic bank account data set that may be used to test fraud detection capabilities (\citealp{jesus2022turning}). However, the implementation of these models must also consider fairness, ensuring that the models do not perpetuate or exacerbate existing biases, thereby fostering trust and ethical use of technology in financial services (\citealp[p.114]{barocas2023fairness}; \citealp[p.12]{mehrabi2021survey}).\\
+
+
+
+
+
+\section{Problem Statement and Research Objectives}
+Despite the advancements in machine learning, fraud detection in banking remains a challenging task. The primary issues include the imbalance in datasets, with fraudulent transactions being significantly fewer than legitimate ones, and the need for models that are both accurate and interpretable. Moreover, there is a critical need to ensure that these models are fair and do not reinforce existing biases, which can lead to social inequities \citep{corbett2023measure}.\\
+
+
+
+The primary objectives of this thesis are:
+\begin{enumerate}
+    \item To explore the application of machine learning techniques in detecting fraudulent activities within bank accounts using the \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite}.\\
+    \item To develop and evaluate a machine learning model for fraud detection using the \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite}, thereby improving detection accuracy, increasing working efficiency, and mitigating social inequities caused by biased predictions.
+    \item To investigate the interpretability, reliability, and fairness of the developed model to ensure practical applicability in real-world scenarios.
+\end{enumerate}
+
+
+\section{Significance of the Study}
+The significance of this study lies in its potential to enhance the current fraud detection systems used in banking. By leveraging advanced machine learning techniques, this research aims to develop a more accurate, efficient, and fair fraud detection model. This model could significantly reduce financial losses for banks and improve the overall security of financial transactions.\\
+
+Furthermore, the focus on model interpretability and fairness addresses critical ethical considerations in machine learning. By ensuring that the model’s decisions are transparent and unbiased, this research contributes to the broader goal of developing fair and trustworthy \acrshort{ai} systems. The findings from this study could also be applicable to other domains where fraud detection is crucial, such as insurance and e-commerce. Ensuring fairness in machine learning models is essential for fostering trust and promoting ethical practices in technology \citep{barocas2023fairness}; \citep{mehrabi2021survey}.\\
+
+\clearpage
+
+\section{Thesis Structure}
+The remainder of this thesis is structured as follows:
+
+\begin{itemize}
+    \item \textbf{Chapter 2: Literature Review} - This chapter provides an overview of the existing research on machine learning applications in banking, fraud detection, and the challenges associated with model interpretability and fairness.
+    \item \textbf{Chapter 3: Methodology} - This chapter outlines the methodology used for this research, including the \acrshort{crispdm} framework, data preprocessing techniques, and the machine learning models developed and evaluated.
+    \item \textbf{Chapter 4: Results and Discussion} - This chapter presents the findings of the research, including the performance of different machine learning models, the impact of data preprocessing techniques, and an analysis of model interpretability and fairness.
+    \item \textbf{Chapter 5: Conclusion} - This chapter summarizes the key findings of the research, discusses the implications for practice, and suggests directions for future research.
+\end{itemize}
+
+
+
+\chapter{Literature Review}
+Machine learning has revolutionized various industries, including banking, by providing tools and techniques to analyze large volumes of data and extract meaningful patterns. Its applications in banking encompass credit scoring, customer segmentation, risk management, and fraud detection \citep[p. 3034]{bao2020detecting, pan2024machine, hashemi2022fraud}. The ability of machine learning algorithms to learn from historical data and improve their performance over time makes them ideal for dynamic and complex environments like financial services.
+
+\section{Applications of Machine Learning in Banking}
+Machine learning techniques have been extensively applied in fraud detection within the banking sector. Studies such as those by Bao et al. and Seera et al. demonstrate the effectiveness of ensemble learning models and intelligent payment card fraud detection systems, respectively \citep{bao2020detecting, seera2024intelligent}. Further, Pan and Hashemi et al. highlight the importance of feature engineering and hyperparameter tuning in enhancing model performance for fraud detection \citep{pan2024machine, hashemi2022fraud}.\\
+
+Numerous studies have reviewed various techniques for fraud detection. Chaudhary et al. provided an extensive review, combining data mining with machine learning for improved fraud detection accuracy \citep{chaudhary2012review}. Similarly, John et al. emphasized real-time fraud detection through data mining techniques \citep{john2016realtime}. Bakhtiari et al. explored ensemble learning methods, achieving high performance through combining LightGBM and LiteMORT algorithms \citep{bakhtiari2023credit}. Prabowo et al. and Wei et al. discussed the significance of big data analytics and the ContrastMiner algorithm for online banking fraud detection \citep{prabowo2016learning, wei2013effective}.\\
+
+\section{Fraud Detection and Machine Learning}
+The increasing attention to machine learning for fraud detection is due to its ability to analyze large datasets and identify patterns indicative of fraudulent behavior. This section reviews studies like those of Jesus et al. and Pombal et al., focusing on the challenges of biased and imbalanced datasets \citep{jesus2022turning, pombal2022understanding}. Additionally, techniques such as SMOTE introduced by Chawla et al. have been pivotal in addressing imbalanced data scenarios in fraud detection \citep{chawla2002smote}.\\
+
+Hashemi et al. presented a comprehensive approach to fraud detection by leveraging Bayesian optimization and weight-tuning hyperparameters to address unbalanced data issues. Their experiments with CatBoost, XGBoost, and LightGBM, as well as a majority voting ensemble method, demonstrated significant improvements in performance metrics such as ROC-AUC, precision, recall, and F1-score \citep[p. 3034]{hashemi2022fraud}.\\
+
+Chaudhary et al. reviewed various techniques used in credit card fraud detection, highlighting the effectiveness of combining data mining techniques with machine learning to improve fraud detection accuracy and reduce false alarm rates. Their review underscores the importance of continuous advancements in fraud detection methodologies to keep up with evolving fraud tactics \citep[p. 39]{chaudhary2012review}.\\
+
+John et al. emphasized real-time fraud detection through data mining techniques, including association, clustering, forecasting, and classification. Their research highlights the significance of analyzing customer data in real-time to identify fraudulent patterns and implement necessary authentication measures to prevent fraud \citep[p. 1186]{john2016realtime}.\\
+
+Bakhtiari et al. explored the use of ensemble data mining methods for credit card fraud detection, demonstrating the effectiveness of combining LightGBM and LiteMORT algorithms. Their study achieved high accuracy and efficiency in detecting fraudulent transactions through the use of ensemble averaging methods \citep[p. 29057]{bakhtiari2023credit}.\\
+
+Prabowo et al. provided a systematic literature review on learning fraud detection from big data in online banking transactions, identifying critical algorithms and emphasizing the importance of big data analytics in enhancing fraud detection capabilities in online banking \citep[p. 127]{prabowo2016learning}.\\
+\\
+
+Wei et al. developed an effective online banking fraud detection framework, introducing the ContrastMiner algorithm to efficiently mine contrast patterns. Their research demonstrated higher accuracy and lower alert volume compared to traditional methods, highlighting the effectiveness of their approach in handling extremely imbalanced data \citep[p. 449]{wei2013effective}.\\
+
+El Bouchti et al. showcased the potential of deep reinforcement learning \acrshort{drl} in banking fraud detection. Their study highlighted the efficiency of \acrshort{drl} in learning optimal policies from large datasets, leading to significant improvements in detection accuracy and robustness \citep[p. 58]{el2017fraud}.\\
+
+Vashistha et al. proposed a robust framework for fraud detection in banking using \acrshort{ml} and \acrshort{nn}, utilizing various advanced techniques and achieving 100\% accuracy with Random Forest, XGBoost, LightGBM, and Decision Trees. Their approach effectively balances datasets and improves detection performance, showcasing significant advancements in fraud detection methodologies \citep[p. 201]{vashistha2024robust}.\\
+
+Tekkali and Natarajan developed the \acrshort{rdqn} model, which integrates deep reinforcement learning with rough set theory for digital transactional fraud detection. This model improves both accuracy and processing time by selecting the best features and leveraging an ensemble of deep neural networks and reinforcement learning \citep[p. 5313]{tekkali2023rdqn}.
+
+Gandhar et al. reviewed the latest \acrshort{ml} and \acrshort{dl} techniques for fraud detection, emphasizing the importance of supervised, unsupervised, and reinforcement learning approaches. Their study discussed the strengths and weaknesses of various methods, the challenges of imbalanced datasets, adversarial attacks, and model interpretability, and provided a comprehensive overview of the field \citep[p. 1]{gandhar2024fraud}.\\
+
+\clearpage
+\section{Interpretable Machine Learning}
+Interpretability of machine learning models is crucial, especially in high-stakes domains like banking. Stakeholders need to understand how and why a model makes certain decisions to trust and effectively utilize its predictions. Interpretable models can help identify biases, ensure compliance with regulations, and provide insights into fraud patterns \citep[p.114]{barocas2023fairness}.\\
+
+Techniques such as decision trees, rule-based systems, and post-hoc interpretability methods are often employed to enhance model transparency. Barocas, Hardt, and Narayanan argue that model interpretability is essential for ensuring transparency and trust in machine learning systems. They discuss various techniques for enhancing interpretability, such as feature importance analysis and model-agnostic methods \citep[p.114]{barocas2023fairness}.\\
+
+Mehrabi et al. surveyed bias and fairness in machine learning, highlighting the need for interpretable models to address ethical and legal considerations in automated decision-making \citep[p.12]{mehrabi2021survey}. They emphasize that interpretable models can help identify and mitigate biases, contributing to fairer and more transparent systems.\\
+
+Molnar provides a comprehensive guide on making black box models explainable, discussing various interpretability techniques such as feature importance, accumulated local effects, and Shapley values. Molnar emphasizes the necessity of model-agnostic methods for interpreting complex models and highlights their strengths and weaknesses in different contexts \citep[p.1]{molnar2020interpretable}.\\
+
+Du et al. categorize techniques for interpretable machine learning into intrinsic and post-hoc interpretability, each with global and local approaches. They highlight the importance of meaningful explanations to avoid artifacts and emphasize the multidisciplinary nature of interpretable machine learning, involving efforts from computer science, human-computer interaction, and social science \citep[p.68]{du2019techniques}.\\
+
+Murdoch et al. define interpretability in the context of machine learning and introduce the predictive, descriptive, relevant framework for discussing interpretations. They categorize interpretation methods into model-based and post-hoc, providing numerous real-world examples to demonstrate the framework's application. Their work emphasizes the importance of human audiences in evaluating interpretability and suggests directions for future research \citep[p. 22071]{murdoch2019definitions}.\\
+
+Gilpin et al. provided an overview of interpretability in machine learning, discussing various explanatory methods and highlighting the need for explanations to ensure fairness, identify potential biases, and validate model performance. Their survey covers foundational concepts of explainability, classifies existing literature, and suggests future research directions for explainable AI \citep[p. 80]{gilpin2018explaining}.
+
+\section{Reliable Machine Learning}
+Ensuring the reliability and consistency of machine learning models is vital for their successful deployment in fraud detection. Reliability can be enhanced through robust model validation, continuous monitoring, and regular updates to the model based on new data. It is also important to consider the ethical implications of model decisions and strive for fairness to prevent social inequities \citep[p.12]{mehrabi2021survey}.\\
+
+Fairness-aware machine learning aims to create models that provide equitable outcomes across different demographic groups, thereby promoting ethical AI practices \citep[p.1]{corbett2023measure}. He et al. developed the \acrshort{adasyn} technique for adaptive synthetic sampling, which improves the learning of minority classes in imbalanced datasets. This method enhances model reliability by ensuring that minority classes are adequately represented during training \citep[p.1325]{he2008adasyn}.\\
+
+Xu et al. proposed the use of conditional \acrshort{gan}s for modeling tabular data, which can generate high-quality synthetic datasets for training robust machine learning models. Their approach addresses the challenges of data scarcity and imbalance, contributing to more reliable fraud detection systems \citep[p.42]{xu2019modeling}.\\
+
+Cooper discusses the importance of balancing randomness and arbitrariness in machine learning systems to enhance their reliability at scale. The study highlights key lessons and strategies for ensuring that machine learning models remain robust and trustworthy in diverse and dynamic environments. Emphasizing the need for systematic evaluation and deployment practices, the research provides valuable insights for developing reliable AI systems in high-stakes domains like banking \citep{cooper2024between}.
+
+
+
+
+
+
+
+
+
+
+\chapter{Methodology}
+
+\section{CRISP-DM Framework}
+The \acrshort{crispdm} (Cross-Industry Standard Process for Data Mining) methodology provides a structured approach for data mining and machine learning projects. It includes six phases: Business Understanding, Data Understanding, Data Preparation, Modeling, Evaluation, and Deployment. Each phase is essential for the successful development and implementation of machine learning models.
+
+\subsection{Business Understanding}
+The first phase involves defining the business objectives and requirements for the fraud detection model within the \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite}. This includes understanding the specific challenges and goals related to fraud detection in banking.
+
+\subsection{Data Understanding}
+The second phase focuses on analyzing the structure and characteristics of the banking data. This involves exploring the datasets, identifying data quality issues, and understanding the relationships between different data attributes.\\
+
+To begin our analysis, we have read the 'Base.csv' file into a pandas Data Frame. The dataset consists of 1,000,000 entries and 32 columns. These columns include 9 float64 columns, 18 int64 columns, and 5 object columns, representing a mix of numerical and categorical data. This diverse set of features will necessitate distinct handling techniques during my analysis.\\
+
+Given that 'fraud\_bool' is the target variable, we recognize that the task is a classification problem aimed at identifying fraudulent transactions. After using the `df.info()` command in Jupyter Notebook to obtain the information of the Data Frame, it appears that there are no missing values based on the Non-Null Count. However, we note that certain columns, such as 'bank\_months\_count' and 'session\_length\_in\_minutes', use '-1' to represent missing values, which is evident because counts and lengths should logically be non-negative.\\
+
+In the subsequent steps, we will perform descriptive statistics and data visualization to gain deeper insights into the data. Additionally, we will undertake feature engineering to enhance the utility of the data for my analysis. By addressing the potential issues with missing values and applying appropriate preprocessing techniques, we aim to prepare the dataset thoroughly for the modeling phase. The analysis of these summary statistics provides a foundation for deeper exploratory data analysis, including the identification of potential correlations, patterns, and insights that will aid in understanding the factors contributing to fraudulent activities.\\
+
+
+
+\begin{table}[htbp]
+    \centering
+    \caption{Dataset Structure and Characteristics - Part 1}
+    \begin{tabular}{|p{6cm}|p{3cm}|p{7cm}|}
+        \hline
+        \textbf{Attribute} & \textbf{Data Type} & \textbf{Description} \\ \hline
+        fraud\_bool & Integer & Indicator of fraud (target variable) \\ \hline
+        income & Float & Annual income of the applicant (in decile form), ranges from 0.1 to 0.9 \\ \hline
+        name\_email\_similarity & Float & Similarity between email and applicant’s name, ranges from 0 to 1 \\ \hline
+        prev\_address\_months\_count & Integer & Months at previous address, ranges from -1 (missing) to 380 \\ \hline
+        current\_address\_months\_count & Integer & Months at current address, ranges from -1 (missing) to 429 \\ \hline
+        customer\_age & Integer & Age of the applicant, ranges from 10 to 90 years \\ \hline
+        days\_since\_request & Float & Days since the application, ranges from 0 to 79 \\ \hline
+        intended\_balcon\_amount & Float & Initial transferred amount, ranges from -16 (missing) to 114 \\ \hline
+        payment\_type & Object & Type of payment method (5 anonymized values) \\ \hline
+        zip\_count\_4w & Integer & Applications in same zip code in last 4 weeks, ranges from 1 to 6830 \\ \hline
+        velocity\_6h & Float & Average applications per hour in last 6 hours, ranges from -175 to 16818 \\ \hline
+        velocity\_24h & Float & Average applications per hour in last 24 hours, ranges from 1297 to 9586 \\ \hline
+        velocity\_4w & Float & Average applications per hour in last 4 weeks, ranges from 2825 to 7020 \\ \hline
+        bank\_branch\_count\_8w & Integer & Applications in the bank branch in last 8 weeks, ranges from 0 to 2404 \\ \hline
+    \end{tabular}
+    \label{tab:data-understanding-part1}
+\end{table}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Dataset Structure and Characteristics - Part 2}
+    \begin{tabular}{|p{6cm}|p{3cm}|p{7cm}|}
+        \hline
+        \textbf{Attribute} & \textbf{Data Type} & \textbf{Description} \\ \hline
+        date\_of\_birth\_distinct\_emails\_4w & Integer & Emails for applicants with same date of birth in last 4 weeks, ranges from 0 to 39 \\ \hline
+        employment\_status & Object & Employment status of the applicant (7 anonymized values) \\ \hline
+        credit\_risk\_score & Integer & Internal score of application risk, ranges from -191 to 389 \\ \hline
+        email\_is\_free & Integer & Domain of application email (free or paid) \\ \hline
+        housing\_status & Object & Current residential status (7 anonymized values) \\ \hline
+        phone\_home\_valid & Integer & Validity of home phone number \\ \hline
+        phone\_mobile\_valid & Integer & Validity of mobile phone number \\ \hline
+        bank\_months\_count & Integer & Age of previous account in months, ranges from -1 (missing) to 32 \\ \hline
+        has\_other\_cards & Integer & If the applicant has other cards from the same bank \\ \hline
+        proposed\_credit\_limit & Float & Proposed credit limit, ranges from 200 to 2000 \\ \hline
+        foreign\_request & Integer & If the request's origin country is different from the bank's country \\ \hline
+        source & Object & Online source of application (browser or app) \\ \hline
+        session\_length\_in\_minutes & Float & Session length in minutes, ranges from -1 (missing) to 107 \\ \hline
+        device\_os & Object & Operating system of the device (Windows, macOS, Linux, X11, or other) \\ \hline
+        keep\_alive\_session & Integer & User option on session logout \\ \hline
+        device\_distinct\_emails\_8w & Integer & Distinct emails from the device in last 8 weeks, ranges from -1 (missing) to 2 \\ \hline
+        device\_fraud\_count & Integer & Number of fraudulent applications from the device, ranges from 0 to 1 \\ \hline
+        month & Integer & Month of the application, ranges from 0 to 7 \\ \hline
+        \end{tabular}
+    \label{tab:data-understanding-part2}
+\end{table}
+
+
+
+
+
+\clearpage
+
+\subsubsection{Summary Statistics Analysis}
+
+\textbf{Overview:}
+After conducting a summary statistics analysis on the dataset, we observed a wide range of statistical metrics for each of the columns. Below is a detailed examination of some of the key features:
+
+\textbf{Target Variable:}
+\begin{itemize}
+    \item \textbf{fraud\_bool:}
+        \begin{itemize}
+            \item Mean: 0.011, indicating that approximately 1.1\% of the entries are marked as fraudulent.
+            \item Standard Deviation: 0.104, indicating low variability.
+            \item The majority of entries (75th percentile and below) are non-fraudulent.
+        \end{itemize}
+\end{itemize}
+
+\textbf{Key Numerical Features:}
+\begin{itemize}
+    \item \textbf{income:}
+        \begin{itemize}
+            \item Mean: 0.563
+            \item Standard Deviation: 0.290
+            \item Range: 0.1 to 0.9
+            \item Income is fairly evenly distributed with a moderate standard deviation.
+        \end{itemize}
+    \item \textbf{name\_email\_similarity:}
+        \begin{itemize}
+            \item Mean: 0.494
+            \item Standard Deviation: 0.289
+            \item Range: 0.000001 to 0.999999
+            \item This feature has a wide range and moderate variability, suggesting diverse data.
+        \end{itemize}
+    \item \textbf{prev\_address\_months\_count:}
+        \begin{itemize}
+            \item Mean: 16.719
+            \item Standard Deviation: 44.046
+            \item Minimum: -1 (likely indicating missing or default values)
+            \item The distribution is highly skewed with many entries having a default or missing value.
+        \end{itemize}
+    \item \textbf{current\_address\_months\_count:}
+        \begin{itemize}
+            \item Mean: 86.588
+            \item Standard Deviation: 88.407
+            \item Minimum: -1 (possibly indicating missing data)
+            \item The data shows significant variability and potential outliers.
+        \end{itemize}
+    \item \textbf{customer\_age:}
+        \begin{itemize}
+            \item Mean: 33.689
+            \item Standard Deviation: 12.026
+            \item Range: 10 to 90
+            \item The ages are reasonably spread with a typical adult population.
+        \end{itemize}
+    \item \textbf{days\_since\_request:}
+        \begin{itemize}
+            \item Mean: 1.026
+            \item Standard Deviation: 5.382
+            \item Minimum: Close to zero, indicating some very recent requests.
+            \item The distribution suggests that most requests are recent, with some outliers.
+        \end{itemize}
+    \item \textbf{intended\_balcon\_amount:}
+        \begin{itemize}
+            \item Mean: 8.661
+            \item Standard Deviation: 20.236
+            \item Minimum: -15.531
+            \item This feature has a wide range and high variability, indicating diverse account balances.
+        \end{itemize}
+    \item \textbf{zip\_count\_4w:}
+        \begin{itemize}
+            \item Mean: 1572.692
+            \item Standard Deviation: 1005.375
+            \item Range: 1 to 6700
+            \item Indicates high variability in the number of zip codes used.
+        \end{itemize}
+    \item \textbf{velocity\_6h:}
+        \begin{itemize}
+            \item Mean: 5665.297
+            \item Standard Deviation: 3009.381
+            \item Range: -170.603 to 16715.565
+            \item The negative minimum value needs investigation, possibly indicating data entry issues or outliers.
+        \end{itemize}
+\end{itemize}
+
+\textbf{Categorical Features:}
+\begin{itemize}
+    \item \textbf{payment\_type, employment\_status, housing\_status, source, device\_os:}
+        \begin{itemize}
+            \item These columns contain categorical data which will need encoding for further analysis.
+        \end{itemize}
+\end{itemize}
+
+\textbf{Other Notable Features:}
+\begin{itemize}
+    \item \textbf{phone\_mobile\_valid:}
+        \begin{itemize}
+            \item Mean: 0.890
+            \item Indicates most phone numbers are valid.
+        \end{itemize}
+    \item \textbf{bank\_months\_count:}
+        \begin{itemize}
+            \item Mean: 10.839
+            \item Standard Deviation: 12.117
+            \item The distribution includes default values (-1), indicating potential data entry issues.
+        \end{itemize}
+    \item \textbf{session\_length\_in\_minutes:}
+        \begin{itemize}
+            \item Mean: 7.545
+            \item Standard Deviation: 8.033
+            \item Range: -1 to 85.899
+            \item The negative minimum value should be investigated.
+        \end{itemize}
+    \item \textbf{device\_distinct\_emails\_8w:}
+        \begin{itemize}
+            \item Mean: 1.018
+            \item Standard Deviation: 0.181
+            \item Indicates most devices have around one distinct email associated.
+        \end{itemize}
+    \item \textbf{device\_fraud\_count:}
+        \begin{itemize}
+            \item Mean: 0, indicating no frauds associated with devices on average, aligning with the low fraud rate.
+        \end{itemize}
+\end{itemize}
+
+\textbf{Concluding Remarks:}
+The dataset offers a rich and varied set of features with both numerical and categorical data. The presence of negative values and potential outliers in some features suggests a need for thorough data cleaning and preprocessing. The analysis of these summary statistics provides a foundation for deeper exploratory data analysis, including the identification of potential correlations, patterns, and insights that will aid in understanding the factors contributing to fraudulent activities.
+
+\subsubsection{Correlation Analysis}
+
+The correlation matrix provides insights into the linear relationships between different features in the dataset. It helps identify which features have strong correlations with each other and with the target variable ('fraud\_bool'). These insights are crucial for understanding the underlying structure of the data and guiding feature selection and engineering processes for predictive modeling.
+
+\textbf{Target Variable: Fraud Indicator ('fraud\_bool'):}
+\begin{itemize}
+    \item The correlations of the 'fraud\_bool' feature with other features are generally weak, indicating that no single feature strongly predicts fraud on its own.
+    \item Some noteworthy correlations include:
+    \begin{itemize}
+        \item \textbf{Credit Risk Score (``credit\_risk\_score'')}: Positive correlation (0.071), suggesting that higher credit risk scores are slightly associated with fraudulent behavior.
+        \item \textbf{Proposed Credit Limit (``proposed\_credit\_limit'')}: Positive correlation (0.069), indicating that higher proposed credit limits have a mild association with fraud.
+        \item \textbf{Customer Age (``customer\_age'')}: Positive correlation (0.063), indicating older applicants have a slightly higher likelihood of fraud.
+    \end{itemize}
+\end{itemize}
+
+\textbf{Key Numerical Features:}
+
+\textbf{Income (``income''):}
+\begin{itemize}
+    \item Positively correlated with 'credit\_risk\_score' (0.171) and 'proposed\_credit\_limit' (0.109), indicating that higher income is associated with higher credit risk scores and higher proposed credit limits.
+    \item Negatively correlated with 'velocity\_6h' (-0.096) and 'zip\_count\_4w' (-0.081), suggesting that higher income applicants are less likely to be involved in high-frequency applications.
+\end{itemize}
+
+\textbf{Name-Email Similarity ('name\_email\_similarity'):}
+\begin{itemize}
+    \item Weak correlations with other features, indicating it is largely independent in its predictive value.
+\end{itemize}
+
+\textbf{Previous Address Months Count ('prev\_address\_months\_count'):}
+\begin{itemize}
+    \item Positively correlated with 'current\_address\_months\_count' (0.126) and 'customer\_age' (0.072), indicating that longer previous address durations are associated with longer current address durations and older age.
+\end{itemize}
+
+\textbf{Current Address Months Count ('current\_address\_months\_count'):}
+\begin{itemize}
+    \item Positively correlated with 'customer\_age' (0.142), 'proposed\_credit\_limit' (0.130), and 'phone\_home\_valid' (0.128), suggesting that longer residence at the current address is associated with older age, higher proposed credit limits, and valid home phone numbers.
+\end{itemize}
+
+\textbf{Customer Age ('customer\_age'):}
+\begin{itemize}
+    \item Positively correlated with 'credit\_risk\_score' (0.166) and 'proposed\_credit\_limit' (0.149), indicating that older customers tend to have higher credit risk scores and proposed credit limits.
+    \item Negatively correlated with 'date\_of\_birth\_distinct\_emails\_4w' (-0.420), indicating that older customers are less likely to have multiple emails associated with the same date of birth.
+\end{itemize}
+
+\textbf{Days Since Request ('days\_since\_request'):}
+\begin{itemize}
+    \item Largely uncorrelated with most features, indicating it may not be a significant predictor on its own.
+\end{itemize}
+
+\textbf{Intended Balance Amount ('intended\_balcon\_amount'):}
+\begin{itemize}
+    \item Positively correlated with 'bank\_months\_count' (0.178) and 'intended\_balcon\_amount' (0.179), suggesting that higher intended balance amounts are associated with longer bank account durations.
+\end{itemize}
+
+\textbf{ZIP Code Count Over 4 Weeks ('zip\_count\_4w'):}
+\begin{itemize}
+    \item Positively correlated with 'velocity\_6h' (0.142) and other velocity measures, indicating that higher application activity is concentrated in certain ZIP codes.
+\end{itemize}
+
+\textbf{Categorical Features:}
+\begin{itemize}
+    \item \textbf{Payment Type ('payment\_type'), Employment Status ('employment\_status'), Housing Status ('housing\_status'), Source ('source'), Device OS ('device\_os'):}
+    \item These features will need to be encoded appropriately to assess their correlations with other features and their impact on fraud detection.
+\end{itemize}
+
+\textbf{Other Notable Features:}
+
+\textbf{Phone Mobile Valid ('phone\_mobile\_valid'):}
+\begin{itemize}
+    \item Positively correlated with 'phone\_home\_valid' (0.273), indicating that valid mobile phone numbers are often associated with valid home phone numbers.
+\end{itemize}
+
+\textbf{Bank Months Count ('bank\_months\_count'):}
+\begin{itemize}
+    \item Positively correlated with 'intended\_balcon\_amount' (0.178), suggesting that longer bank account durations are associated with higher intended balance amounts.
+    \item Negatively correlated with 'credit\_risk\_score' (-0.061), indicating that longer bank account durations may be associated with lower credit risk scores.
+\end{itemize}
+
+\textbf{Session Length in Minutes ('session\_length\_in\_minutes'):}
+\begin{itemize}
+    \item Positively correlated with 'velocity\_24h' (0.067) and 'velocity\_4w' (0.079), indicating that longer session lengths are associated with higher application velocities.
+\end{itemize}
+
+\textbf{Device Distinct Emails Over 8 Weeks ('device\_distinct\_emails\_8w'):}
+\begin{itemize}
+    \item Positively correlated with 'velocity\_24h' (0.037) and 'velocity\_4w' (0.044), suggesting that devices with multiple distinct emails are associated with higher application activity.
+\end{itemize}
+
+\textbf{Concluding Remarks:}
+\begin{itemize}
+    \item The correlation analysis provides valuable insights into the relationships between features in the dataset. The generally weak correlations with the target variable ('fraud\_bool') suggest that no single feature is a strong predictor of fraud. This underscores the importance of using a combination of features and advanced modeling techniques, such as ensemble methods or deep learning, to effectively detect fraudulent activities. The identified correlations also highlight potential areas for feature engineering and the importance of addressing multicollinearity during the modeling process.
+\end{itemize}
+
+\subsection{Data Preparation}
+Data preparation is a critical phase where the raw data is cleaned and transformed for analysis. This includes handling missing values, encoding categorical variables, and normalizing numerical features. Given the nature of fraud detection, addressing data imbalance through techniques such as \acrshort{smotenc} (Synthetic Minority Over-sampling Technique for Nominal and Continuous) or \acrshort{adasyn} (Adaptive Synthetic Sampling Approach) is also part of this phase \citep{chawla2002smote};\citep{he2008adasyn}.\\
+
+
+\subsection{Modeling}
+In the modeling phase, various machine learning algorithms are developed and trained on the prepared data. Algorithms such as logistic regression, decision trees, random forests, and neural networks will be explored. The models will be tuned to optimize their performance on the fraud detection task.
+
+\subsection{Evaluation}
+The evaluation phase involves assessing the performance of the developed models. Metrics such as accuracy, precision, recall, F1-score, and Area Under the Receiver Operating Characteristic Curve (\acrshort{auc}-\acrshort{roc}) will be used to evaluate the models' effectiveness in detecting fraudulent transactions. Cross-validation techniques will be employed to ensure the robustness and generalizability of the models. Additionally, fairness metrics will be considered to ensure the models do not exhibit biased behavior \citep{barocas2023fairness};\citep{mehrabi2021survey}.\\
+
+
+
+\subsection{Deployment}
+The final phase involves deploying the model into a production environment where it can be used to detect fraudulent transactions in real-time. This includes integrating the model with existing systems, monitoring its performance, and updating it as needed to adapt to new patterns of fraudulent behavior.
+
+
+
+
+\subsection{Data Preparation}
+Data preparation is a critical phase where the raw data is cleaned and transformed for analysis. This includes handling missing values, encoding categorical variables, and normalizing numerical features. Given the nature of fraud detection, addressing data imbalance through techniques such as \acrshort{smotenc} (Synthetic Minority Over-sampling Technique for Nominal and Continuous) or \acrshort{adasyn} (Adaptive Synthetic Sampling Approach) is also part of this phase \citep{chawla2002smote};\citep{he2008adasyn}.\\
+
+\subsubsection{Handling Missing Values and Negative Values}
+During the data preparation phase, I identified that certain columns used '-1' to indicate missing values. To address this, I replaced '-1' with NaN in the following columns: 'prev\_address\_months\_count', 'current\_address\_months\_count', 'intended\_balcon\_amount', 'session\_length\_in\_minutes', and 'device\_distinct\_emails\_8w'. This step ensures that missing values are accurately represented and can be appropriately handled in subsequent preprocessing steps. The code used for this transformation is as follows:
+
+\begin{lstlisting}[language=Python, caption=Handling Missing Values and Negative Values]
+# Handling Missing Values and Negative Values
+columns_with_missing_values = [
+    'prev_address_months_count', 'current_address_months_count', 
+    'intended_balcon_amount', 'session_length_in_minutes', 'device_distinct_emails_8w'
+]
+
+for col in columns_with_missing_values:
+    df[col] = df[col].replace(-1, np.nan)
+\end{lstlisting}
+
+While there are no traditional missing values in the dataset, this preprocessing step was necessary to handle the '-1' placeholders, ensuring the data is clean and ready for analysis. Detailed information about this process can be found in the appendix (Jupyter Notebook).
+
+
+
+\subsubsection{Identification of Key Features}
+The identification of key features was an essential part of the exploratory data analysis (\acrshort{eda}) process. The key features were selected based on their potential relevance to fraud detection, statistical metrics, and domain knowledge. The selected key features are:
+
+\begin{itemize}
+    \item \textbf{income}: Represents the annual income of the applicant, which can influence credit behavior.
+    \item \textbf{name\_email\_similarity}: Measures the similarity between the applicant's name and email, which might indicate suspicious activity if highly similar.
+    \item \textbf{prev\_address\_months\_count}: The number of months at the previous address, providing insight into stability.
+    \item \textbf{current\_address\_months\_count}: The number of months at the current address, also indicating stability.
+    \item \textbf{customer\_age}: The age of the customer, as certain age groups may have different fraud risk profiles.
+    \item \textbf{days\_since\_request}: The number of days since the request was made, which might correlate with the urgency or recency of the application.
+    \item \textbf{intended\_balcon\_amount}: The intended balance amount for the application, providing information on the financial aspect of the request.
+    \item \textbf{zip\_count\_4w}: The number of applications from the same zip code in the past four weeks, which could indicate regional fraud trends.
+    \item \textbf{velocity\_6h}: The number of applications made in the last six hours, indicating rapid application behavior that could be suspicious.
+\end{itemize}
+
+These features were identified through a combination of statistical analysis, including correlation analysis and summary statistics, as well as domain expertise in understanding which attributes might be indicative of fraudulent behavior. The selection of these key features will help focus the modeling efforts on the most relevant data attributes.
+
+
+
+
+\subsection{Modeling}
+In the modeling phase, various machine learning algorithms are developed and trained on the prepared data. Algorithms such as logistic regression, decision trees, random forests, and neural networks will be explored. The models will be tuned to optimize their performance on the fraud detection task.
+
+\subsection{Evaluation}
+The evaluation phase involves assessing the performance of the developed models. Metrics such as accuracy, precision, recall, F1-score, and \acrshort{auc}-\acrshort{roc} will be used to evaluate the effectiveness of the models in detecting fraudulent transactions. Cross-validation techniques will be employed to ensure the robustness and generalizability of the models.
+
+\subsection{Deployment}
+The final phase involves deploying the model into a production environment where it can be used to detect fraudulent transactions in real-time. This includes integrating the model with existing systems, monitoring its performance, and updating it as needed to adapt to new patterns of fraudulent behavior.
+
+
+
+
+
+
+
+
+\section{Data: The Characteristics of the BAF Suite}
+\subsection{Dataset Description}
+The \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite} comprises six datasets generated from a real-world online bank account opening fraud detection dataset. This dataset is highly relevant for fair machine learning, as model predictions result in either granting or denying financial services to individuals, which can exacerbate existing social inequities. The datasets were generated using state-of-the-art Generative Adversarial Network (\acrshort{gan}) models.
+
+\subsection{Handling Imbalanced Datasets}
+Given the nature of fraud detection, the datasets are expected to be highly imbalanced, with fraudulent transactions being significantly fewer than legitimate ones. To address this issue, the research will employ techniques such as \acrshort{smotenc} (Synthetic Minority Over-sampling Technique for Nominal and Continuous) and \acrshort{adasyn} (Adaptive Synthetic Sampling Approach) to balance the dataset \citep{chawla2002smote};\citep{he2008adasyn}. These approaches help improve the model's ability to detect fraudulent activities effectively.
+
+However, it is important to note that the \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite} datasets also introduce complexities such as temporal dynamics and data bias patterns that need to be considered \citep{jesus2022turning}. The \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite} comprises six datasets generated from a real-world online bank account opening fraud detection dataset using state-of-the-art Generative Adversarial Network (\acrshort{gan}) models. These datasets feature controlled types of data bias and temporal distribution shifts, making them a robust test bed for evaluating the performance and fairness of machine learning models.
+
+To enhance the generalization capabilities and address these biases, the research will also explore the use of advanced techniques such as:
+
+1. \textbf{Generative Adversarial Networks (\acrshort{gan}s):} These models are used to generate synthetic data that can help in balancing the dataset while preserving the underlying data distribution. The \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite} datasets were generated using CTGAN models, which are specifically designed for tabular data \citep{xu2019modeling}.\\
+
+2. \textbf{Noise Addition Mechanisms:} To ensure privacy and enhance data utility, noise is added to sensitive attributes such as age and income before training the \acrshort{gan} models. This approach helps in mitigating privacy concerns while maintaining data utility \citep{dwork2016calibrating}.\\
+
+By incorporating these advanced techniques, the research aims to create a more balanced and representative dataset that can improve the accuracy and fairness of the fraud detection models.
+
+
+\chapter{Results and Discussion}
+\section{Development of Effective Machine Learning Models}
+In this section, we describe the development and training of various machine learning models for fraud detection using the \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite}. The models considered include logistic regression, decision trees, random forests, and neural networks. Each model was evaluated based on its ability to accurately detect fraudulent transactions while maintaining fairness.
+
+\subsection{Logistic Regression}
+Logistic regression was used as a baseline model due to its simplicity and interpretability. The model was trained on the prepared dataset, and its performance was evaluated using metrics such as accuracy, precision, recall, F1-score, and \acrshort{auc}-\acrshort{roc}. The results indicated that while logistic regression provided a good baseline, its performance was limited in handling the complexity of fraud detection in the \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite} \citep{bao2020detecting}.\\
+
+
+\subsection{Decision Trees}
+Decision trees offer a balance between interpretability and performance. The model was trained using the \acrshort{cart} algorithm, and hyperparameters such as maximum depth and minimum samples split were tuned using cross-validation. The decision tree model showed improved performance over logistic regression, particularly in terms of precision and recall \citep{pan2024machine}.\\
+
+\subsection{Random Forests}
+Random forests, an ensemble method based on decision trees, were developed to enhance model performance. By aggregating the predictions of multiple decision trees, random forests reduced the variance and improved the robustness of the model. The model's hyperparameters, including the number of trees and maximum features, were optimized using grid search. The random forest model demonstrated significant improvements in all performance metrics 
+\citep{seera2024intelligent}.\\
+
+
+\subsection{Neural Networks}
+A neural network model was developed to capture complex patterns in the data. The architecture included multiple hidden layers with ReLU activation functions and dropout for regularization. The model was trained using the Adam optimizer and evaluated using the same performance metrics. Neural networks provided the highest performance but required careful tuning to prevent overfitting \citep{chawla2002smote}.\\
+
+\subsection{Ensemble Learning}
+Ensemble learning, particularly the RUSBoost algorithm, was explored due to its ability to handle class imbalance and improve model performance. RUSBoost combines the strengths of Random Undersampling (RUS) and the AdaBoost algorithm, enhancing the detection of fraudulent activities. The ensemble learning model outperformed logistic regression, decision trees, and random forests in both \acrshort{auc} and \acrshort{ndcg@k} metrics, highlighting its robustness and effectiveness in fraud detection \citep{bao2020detecting}.\\
+
+\subsection{Generative Models and Temporal Dynamics}
+The \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite} datasets introduced the challenge of temporal dynamics and data bias patterns. Generative models, particularly \acrshort{ctgan}s, were employed to generate synthetic datasets that maintained the temporal and bias characteristics of the original data. This approach allowed for the evaluation of models in dynamic environments, ensuring that they could adapt to changes over time \citep{jesus2022turning}.\\
+
+\subsection{Comparison of Model Performance}
+The performance of the models was compared based on the evaluation metrics. Random forests, neural networks, and ensemble learning outperformed logistic regression and decision trees. However, the choice of the final model depends on the balance between performance, interpretability, and computational efficiency.
+
+
+
+
+
+
+
+
+\section{Enhanced Understanding of the Applicability of Machine Learning Techniques}
+The application of various machine learning techniques to the \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite} provided valuable insights into their strengths and limitations. Logistic regression, while simple and interpretable, lacked the capacity to handle the complexity of fraud detection. Decision trees and random forests offered a good balance between performance and interpretability. Neural networks, though powerful, required significant computational resources and careful tuning 
+\citep{bao2020detecting};\citep{pan2024machine};\citep{seera2024intelligent};\citep{chawla2002smote}.\\
+
+These insights highlight the importance of selecting the right model based on the specific requirements of the fraud detection task. For instance, in scenarios where interpretability is crucial, decision trees or random forests may be preferred. In contrast, for tasks demanding high accuracy and complex pattern recognition, neural networks may be more suitable.
+
+
+\section{Strengths and Limitations of Different Approaches}
+\subsection{Logistic Regression}
+\textbf{Strengths:}
+\begin{itemize}
+    \item Simple and easy to interpret.
+    \item Computationally efficient.
+\end{itemize}
+\textbf{Limitations:}
+\begin{itemize}
+    \item Limited capacity to capture complex patterns.
+    \item Lower performance on imbalanced datasets.
+\end{itemize}
+
+\subsection{Decision Trees}
+\textbf{Strengths:}
+\begin{itemize}
+    \item Interpretability through decision paths.
+    \item Can handle both numerical and categorical data.
+\end{itemize}
+\textbf{Limitations:}
+\begin{itemize}
+    \item Prone to overfitting.
+    \item Performance is sensitive to hyperparameter tuning.
+\end{itemize}
+
+\subsection{Random Forests}
+\textbf{Strengths:}
+\begin{itemize}
+    \item High accuracy and robustness.
+    \item Reduces overfitting by averaging multiple trees.
+\end{itemize}
+\textbf{Limitations:}
+\begin{itemize}
+    \item Less interpretable than individual decision trees.
+    \item Computationally intensive.
+\end{itemize}
+
+\subsection{Neural Networks}
+\textbf{Strengths:}
+\begin{itemize}
+    \item Capable of capturing complex patterns in data.
+    \item High performance on large datasets.
+\end{itemize}
+\textbf{Limitations:}
+\begin{itemize}
+    \item Requires significant computational resources.
+    \item Difficult to interpret and tune.
+\end{itemize}
+
+
+\section{Improved Performance Through Oversampling Techniques}
+Handling imbalanced datasets was a critical aspect of this study. Techniques such as \acrshort{smotenc} and \acrshort{adasyn} were employed to balance the dataset and improve the model's ability to detect fraudulent transactions.
+
+\subsection{SMOTE-NC}
+\acrshort{smotenc} was used to generate synthetic samples for the minority class, considering both continuous and categorical features. This technique helped in mitigating the imbalance and enhancing the performance of models, particularly logistic regression and decision trees \citep{chawla2002smote}.\\
+
+\subsection{ADASYN}
+\acrshort{adasyn} focused on generating synthetic samples for hard-to-learn examples, thereby adapting to the density distribution of the minority class. This approach further improved the performance of random forests and neural networks by providing a more balanced and representative training set \citep{he2008adasyn}.\\
+
+\subsection{Generative Adversarial Networks (GANs) for Data Synthesis}
+In addition to traditional oversampling techniques, the use of \acrshort{gan}s, specifically \acrshort{ctgan}s, was explored. These models generated synthetic data that preserved the underlying distribution and bias patterns of the original dataset. This approach proved effective in balancing the dataset while maintaining data utility and privacy \citep{xu2019modeling};\citep{jesus2022turning}.\\
+
+
+\subsection{RUSBoost for Ensemble Learning}
+RUSBoost, a variant of the AdaBoost algorithm combined with Random Undersampling, was particularly effective in addressing class imbalance in the \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite}. This method improved the model's ability to detect fraudulent transactions by focusing on hard-to-predict instances, significantly enhancing the performance of ensemble learning models \citep{bao2020detecting}.\\
+
+\subsection{Comparison of Oversampling Techniques}
+Both \acrshort{smotenc} and \acrshort{adasyn} contributed to improved model performance. However, the use of \acrshort{ctgan}s provided a more nuanced approach to data synthesis, effectively balancing the dataset while preserving important temporal and bias characteristics. RUSBoost further enhanced the performance by combining undersampling with powerful ensemble methods. This comprehensive approach demonstrated the importance of addressing data imbalance in fraud detection and highlighted the effectiveness of advanced data synthesis techniques \citep{chawla2002smote};\citep{he2008adasyn};\citep{jesus2022turning};\citep{bao2020detecting}.\\
+
+
+
+
+\section{Raw Financial Data for Fraud Detection}
+The study by Bao et al. (2020) highlights the potential of using raw financial data directly from financial statements for fraud detection. Unlike traditional methods that rely on financial ratios, using raw data allows for more flexible and powerful model construction \citep{bao2020detecting}.\\
+
+\subsection{Advantages of Raw Financial Data}
+Using raw financial data avoids the imposition of any ex ante structure, letting the data "speak for themselves." This approach can uncover patterns and relationships that may be missed when relying on predefined financial ratios \citep{bao2020detecting}. Additionally, it leverages the full power of machine learning methods, which can handle complex and high-dimensional data more effectively.
+
+\subsection{Comparison with Financial Ratios}
+While financial ratios are grounded in accounting theories and provide sharp predictions, they may miss out on nuanced patterns present in the raw data. Bao et al. (2020) demonstrated that ensemble learning models using raw financial data outperformed models based on financial ratios in terms of both \acrshort{auc} and \acrshort{ndcg@k} metrics (\citealp[p.219]{bao2020detecting}). This finding suggests that raw financial data can enhance the predictive power of fraud detection models.
+
+\subsection{Implications for Model Development}
+Incorporating raw financial data into machine learning models requires careful preprocessing and feature selection. Ensuring data quality and handling missing values are critical steps in this process. The study by Bao et al. (2020) provides a framework for leveraging raw financial data, which can be applied to the \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite} for developing robust fraud detection models \citep{bao2020detecting}.\\
+
+\subsection{Future Research Directions}
+Future research should explore the integration of additional raw financial data items and the development of new theoretical frameworks to guide feature selection. The use of advanced machine learning techniques, such as deep learning and reinforcement learning, can further enhance the ability to detect fraudulent activities in complex financial datasets \citep{bao2020detecting}.\\
+
+
+
+\section{Understanding Unfairness in Fraud Detection}
+The study of unfairness in fraud detection reveals that algorithmic bias can stem from various interactions between data and model choices. Bias in data can arise from different group sizes, prevalence disparities, and label inaccuracies, which in turn affect the fairness and accuracy of machine learning models \citep{barocas2023fairness}.\\
+
+\subsection{Bias Conditions and Their Impact}
+Three primary bias conditions were identified:
+\begin{itemize}
+    \item \textbf{Prevalence Disparity:} The probability of the target class (fraud) differs between protected groups. This can lead to higher error rates for groups with higher fraud prevalence (Bias Condition 1) \citep{pombal2022understanding}.
+    \item \textbf{Group-wise Class-Conditional Distribution:} The distribution of features given the class label differs between groups. This condition can result in skewed false positive and false negative rates, affecting the group that is more adept at committing fraud (Bias Condition 2) \citep{pombal2022understanding}.
+    \item \textbf{Noisy Labels:} Incorrect labeling of data, particularly affecting one group more than others, can exacerbate unfairness in model predictions (Bias Condition 3) \citep{pombal2022understanding}.
+\end{itemize}
+
+\subsection{Types of Bias in Machine Learning}
+According to Mehrabi et al. (2021), bias in machine learning can be categorized into several types:
+\begin{itemize}
+    \item \textbf{Measurement Bias:} Occurs when there are errors in how data is measured or reported, leading to biased outcomes \citep{mehrabi2021survey}.
+    \item \textbf{Omitted Variable Bias:} Happens when important variables are left out of the model, potentially skewing results \citep{mehrabi2021survey}.
+    \item \textbf{Representation Bias:} Arises from non-representative samples that do not capture the diversity of the population \citep{mehrabi2021survey}.
+    \item \textbf{Aggregation Bias:} Occurs when conclusions are drawn about individuals based on population-level data, leading to incorrect assumptions \citep{mehrabi2021survey}.
+    \item \textbf{Sampling Bias:} Results from non-random sampling methods, which may not accurately represent the target population \citep{mehrabi2021survey}.
+    \item \textbf{Historical Bias:} Reflects existing biases and social issues that are embedded in the data due to historical inequalities \citep{mehrabi2021survey}.
+\end{itemize}
+
+\subsection{Fairness-Accuracy Trade-offs}
+Different machine learning algorithms exhibit varying trade-offs between fairness and accuracy under these bias conditions. For instance, while Random Forests were generally robust, they became less fair when exposed to group-wise class-conditional distributions \citep{pombal2022understanding}. This underscores the importance of selecting appropriate fairness metrics and understanding the underlying data biases when developing fraud detection models.
+
+\subsection{Mitigation Strategies}
+Mitigating unfairness in fraud detection involves employing various strategies:
+\begin{itemize}
+    \item \textbf{Pre-processing Techniques:} Adjusting the training data to remove biases before model training, such as through re-sampling or data transformation \citep{kamiran2012data};\citep{caton2024fairness}.
+    \item \textbf{In-processing Techniques:} Incorporating fairness constraints directly into the model training process \citep{caton2024fairness}.
+    \item \textbf{Post-processing Techniques:} Modifying the model's predictions to ensure fair outcomes across different groups \citep{hardt2016equality}.
+\end{itemize}
+
+\subsection{Implications for Practice}
+The findings highlight the necessity for continuous monitoring and adjustment of fraud detection systems to ensure they remain fair and effective. Implementing robust fairness-aware machine learning practices can help financial institutions maintain trust and comply with regulatory requirements while protecting against fraud \citep{pombal2022understanding}.\\
+
+By understanding and addressing the sources of unfairness, we can develop more equitable and reliable fraud detection models, contributing to a fairer financial system overall.
+
+
+
+
+
+\section{Data Preprocessing Techniques for Mitigating Discrimination}
+Addressing discrimination in machine learning models requires effective preprocessing techniques that ensure fairness while maintaining model accuracy. Kamiran and Calders (2012) propose several preprocessing methods to mitigate discrimination in the training data \citep{kamiran2012data}.\\
+
+\subsection{Suppression}
+Suppression involves removing the sensitive attribute and its correlated attributes from the dataset to reduce discrimination. While this method is straightforward, it may not always eliminate indirect discrimination \citep{kamiran2012data}.\\
+
+\subsection{Massaging}
+Massaging changes the class labels of certain data points to reduce discrimination. This method involves promoting and demoting specific instances based on a ranking system to achieve a non-discriminatory dataset. The advantage of massaging is that it minimally impacts the overall class distribution, thus preserving accuracy \citep{kamiran2012data}.\\
+
+\subsection{Reweighing}
+Reweighing assigns different weights to instances based on their class and sensitive attribute values. This method adjusts the dataset to reflect an unbiased distribution without altering class labels. Reweighing is effective for classifiers that can handle weighted instances \citep{kamiran2012data}.\\
+
+\subsection{Sampling}
+Sampling involves oversampling and undersampling different groups to create a balanced dataset. Preferential sampling focuses on instances near the decision boundary, making it effective in reducing discrimination while maintaining accuracy \citep{kamiran2012data}.\\
+
+\subsection{Effectiveness of Preprocessing Techniques}
+These preprocessing techniques have been shown to effectively reduce discrimination in various contexts. However, the choice of technique depends on the specific requirements of the application and the nature of the data. Combining multiple techniques can further enhance fairness and accuracy \citep{kamiran2012data}.\\
+
+\subsection{Implications for Model Training}
+Preprocessing techniques ensure that the training data is non-discriminatory, leading to fairer model predictions. These methods are crucial for developing fraud detection systems that are both accurate and equitable, thereby fostering trust in automated decision-making processes \citep{kamiran2012data}.\\
+
+\section{Fairness in Machine Learning: Approaches and Techniques}
+Ensuring fairness in machine learning involves various technical interventions categorized into pre-processing, in-processing, and post-processing methods. These approaches aim to mitigate bias and promote fairness throughout the machine learning pipeline \citep{caton2024fairness};\citep{mehrabi2021survey}.\\
+
+
+\subsection{Pre-processing Approaches}
+Pre-processing methods focus on transforming the training data to eliminate biases. Techniques include:
+\begin{itemize}
+    \item \textbf{Reweighing:} Assigning weights to instances to balance the representation of different groups in the training data \citep{kamiran2012data}.
+    \item \textbf{Data Transformation:} Adjusting the distributions of sensitive variables to ensure fairness without altering the underlying data significantly \citep{caton2024fairness};\citep{mehrabi2021survey}.
+\end{itemize}
+
+\subsection{In-processing Approaches}
+In-processing methods incorporate fairness constraints into the model training process. These include:
+\begin{itemize}
+    \item \textbf{Fairness Constraints:} Adding fairness metrics to the loss function to penalize unfair outcomes \citep{caton2024fairness}.
+    \item \textbf{Adversarial Training:} Using adversarial networks to detect and mitigate bias during model training \citep{caton2024fairness}.
+\end{itemize}
+
+\subsection{Post-processing Approaches}
+Post-processing methods adjust the model's predictions to ensure fairness. Examples include:
+\begin{itemize}
+    \item \textbf{Outcome Adjustment:} Modifying the predictions of the model to achieve fair outcomes across different groups \citep{hardt2016equality}.
+    \item \textbf{Calibration:} Ensuring that predicted probabilities are consistent across groups \citep{caton2024fairness}.
+\end{itemize}
+
+\subsection{Challenges and Future Directions}
+While significant progress has been made in developing fairness-aware machine learning models, challenges remain:
+\begin{itemize}
+    \item \textbf{Trade-offs:} Balancing fairness and accuracy is often challenging and context-dependent \citep{caton2024fairness};\citep{mehrabi2021survey}.
+    \item \textbf{Computational Complexity:} Many fairness interventions increase the computational burden of model training and evaluation \citep{caton2024fairness}.
+    \item \textbf{Legal and Ethical Considerations:} Ensuring compliance with legal standards and ethical norms is crucial for the adoption of fair machine learning models \citep{caton2024fairness}.
+\end{itemize}
+
+Future research should focus on developing more efficient algorithms, exploring fairness in multi-class and unsupervised learning scenarios, and enhancing the interpretability of fairness interventions \citep{caton2024fairness}.\\
+
+
+
+
+
+\section{Equalized Odds and Equal Opportunity}
+The concepts of equalized odds and equal opportunity are pivotal in ensuring fairness in machine learning models. These criteria help in addressing discrimination against protected attributes during model predictions \citep{hardt2016equality}.\\
+
+\subsection{Equalized Odds}
+Equalized odds require that the predictions of the model are conditionally independent of the protected attribute given the true outcome. This means that for any outcome, the prediction error rates should be the same across all protected groups. Formally, a predictor \( \hat{Y} \) satisfies equalized odds with respect to a protected attribute \( A \) and outcome \( Y \) if:
+\[
+\text{Pr}(\hat{Y} = 1 \mid A = 0, Y = y) = \text{Pr}(\hat{Y} = 1 \mid A = 1, Y = y), \quad \forall y \in \{0, 1\}
+\]
+This criterion ensures that both false positive rates and true positive rates are equal across groups, promoting fairness in model predictions \citep{hardt2016equality}.\\
+
+\subsection{Equal Opportunity}
+Equal opportunity is a relaxation of equalized odds, focusing only on the "advantaged" outcome. It requires that the true positive rates are equal across protected groups. Formally, a predictor \( \hat{Y} \) satisfies equal opportunity with respect to \( A \) and \( Y \) if:
+\[
+\text{Pr}(\hat{Y} = 1 \mid A = 0, Y = 1) = \text{Pr}(\hat{Y} = 1 \mid A = 1, Y = 1)
+\]
+This criterion ensures that individuals who belong to the positive class (e.g., those who do not default on a loan) have equal chances of being correctly predicted, regardless of their protected attribute \citep{hardt2016equality}.\\
+
+\subsection{Implementing Equalized Odds and Equal Opportunity}
+To implement these fairness criteria, post-processing techniques are often employed. These techniques adjust the predictions of an already trained model to meet the desired fairness constraints. For instance, different thresholds can be applied to different groups to ensure equal true positive and false positive rates \citep{hardt2016equality}.\\
+
+\subsection{Implications for Model Training and Evaluation}
+Adopting equalized odds and equal opportunity in model training and evaluation can lead to more equitable outcomes. However, these criteria may come with trade-offs in overall model accuracy. Therefore, it is essential to balance fairness and performance, considering the specific context and impact of the model's application \citep{hardt2016equality}.\\
+
+\subsection{Future Directions}
+Future research should focus on developing methods that can simultaneously improve both fairness and accuracy. Exploring the use of advanced machine learning techniques, such as adversarial training and reinforcement learning, can provide new avenues for achieving these goals \citep{hardt2016equality}.\\
+
+
+
+
+
+\chapter{Conclusion}
+\section{Summary of Findings}
+This thesis explored the application of machine learning techniques in detecting fraudulent activities within bank accounts using the \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite}. Several machine learning models, including logistic regression, decision trees, random forests, and neural networks, were developed and evaluated. The key findings are summarized as follows:
+
+\begin{itemize}
+    \item Logistic regression, while simple and interpretable, was less effective in handling the complexity of fraud detection in the \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite} \citep{bao2020detecting}.
+    \item Decision trees provided a balance between interpretability and performance but were prone to overfitting \citep{pan2024machine}.
+    \item Random forests significantly improved accuracy and robustness by reducing overfitting through the aggregation of multiple decision trees \citep{seera2024intelligent}.
+    \item Neural networks demonstrated the highest performance, capturing complex patterns in the data, but required careful tuning to avoid overfitting \citep{chawla2002smote}.
+    \item Oversampling techniques such as \acrshort{smotenc} and \acrshort{adasyn} effectively addressed data imbalance, enhancing the models' ability to detect fraudulent transactions \citep{he2008adasyn}.
+\end{itemize}
+
+\section{Implications for Practice}
+The findings of this study have significant implications for the banking sector. The implementation of advanced machine learning models can greatly enhance the accuracy and efficiency of fraud detection systems. Key implications include:
+
+\begin{itemize}
+    \item \textbf{Enhanced Fraud Detection:} The use of random forests and neural networks can substantially improve the detection of fraudulent transactions, thereby reducing financial losses for banks.
+    \item \textbf{Operational Efficiency:} By automating the detection process, machine learning models can streamline operations and reduce the need for manual review, allowing resources to be allocated more efficiently.
+    \item \textbf{Fairness and Transparency:} Incorporating fairness metrics and using interpretable models such as decision trees can help ensure that fraud detection systems are transparent and do not perpetuate biases, fostering trust among stakeholders \citep{barocas2023fairness};\citep{mehrabi2021survey}.
+    \item \textbf{Adaptability to New Fraud Patterns:} Machine learning models can continuously learn from new data, making them adaptable to evolving fraud tactics and improving their long-term effectiveness.
+\end{itemize}
+
+\section{Limitations and Future Research Directions}
+Despite the promising results, this research has several limitations that should be addressed in future studies:
+
+\begin{itemize}
+    \item \textbf{Dataset Specificity:} The findings are based on the \acrshort{baf} \href{https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022/code}{Suite dataset}, which may not generalize to other datasets or banking environments. Future research should validate the models on diverse datasets to ensure broader applicability.
+    \item \textbf{Model Interpretability:} While this study explored various models, there is a need for further research into enhancing the interpretability of complex models like neural networks to ensure their decisions can be understood and trusted by stakeholders \citep{barocas2023fairness}.
+    \item \textbf{Real-World Implementation:} The practical implementation of these models in real-world banking systems involves additional challenges such as integration with existing systems, data privacy concerns, and regulatory compliance. Future research should focus on these aspects to facilitate the deployment of machine learning models in operational environments.
+    \item \textbf{Fairness and Bias Mitigation:} While fairness was considered, more comprehensive studies are needed to develop and evaluate methods for bias mitigation in fraud detection models, ensuring equitable outcomes for all demographic groups \citep{corbett2023measure}.
+\end{itemize}
+
+In conclusion, this thesis has demonstrated the potential of machine learning techniques to enhance fraud detection in banking. By addressing the identified limitations and continuing to advance the research, the effectiveness and fairness of fraud detection systems can be further improved, contributing to a more secure and equitable financial system.
+
+
+\bibliographystyle{apalike}
+\bibliography{references}
+
+
+\end{document}
